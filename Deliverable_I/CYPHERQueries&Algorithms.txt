@@ -39,8 +39,6 @@ YIELD nodeId, score
 RETURN gds.util.asNode(nodeId).user_id AS user, score
 ORDER BY score DESC, user ASC
 
-
-
 # Closeness Centrality
 
 CALL gds.alpha.closeness.stream('user-to-user-relationship')
