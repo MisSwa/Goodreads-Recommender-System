@@ -1,0 +1,28 @@
+# Create table contraints 
+
+CREATE CONSTRAINT ON (n:Book) ASSERT n.book_id is UNIQUE; 
+CREATE CONSTRAINT ON (n:Publisher) assert n.publisher is unique; 
+create constraint on (n:Author) assert n.author is unique;
+create constraint on (n:User) assert n.review_id is unique;
+
+# Load data into the tables created above
+
+LOAD CSV WITH HEADERS FROM 'file:///ebooks.csv' AS row 
+CREATE (m:Book:Ebook {book_id: row.book_id, text_reviews_count: row.text_reviews_count, country_code: row.country_code, is_ebook: row.is_ebook, average_rating: row.average_rating,
+description:row.description, format:row.format,link:row.link,
+url:row.url,image_url:row.image_url,
+ratings_count:row.ratings_count,work_id:row.work_id,title:row.title,
+title_without_series:row.title_without_series }); 
+
+LOAD CSV WITH HEADERS FROM 'file:///not_ebooks.csv' AS row 
+CREATE (m:Book:not_Ebook {book_id: row.book_id, text_reviews_count: row.text_reviews_count, country_code: row.country_code, is_ebook: row.is_ebook, average_rating: row.average_rating,
+description:row.description, format:row.format,link:row.link,
+url:row.url,image_url:row.image_url,
+ratings_count:row.ratings_count,work_id:row.work_id,title:row.title,
+title_without_series:row.title_without_series }); 
+
+LOAD CSV WITH HEADERS FROM 'file:///authors.csv' AS row MERGE(n:Author{author:row.author}) WITH row, n MATCH(t:Book {book_id:row.book_id}) MERGE (n) - [:WRITES] -> (t); 
+
+LOAD CSV WITH HEADERS FROM 'file:///publisher.csv' AS row MERGE(n:Publisher{publisher:row.publisher}) WITH row, n MATCH(t:Book{book_id:row.book_id}) MERGE (n) - [:PUBLISHES] -> (t);
+
+LOAD CSV WITH HEADERS FROM 'file:///reviews.csv' AS row MERGE(n:User{user_id:row.user_id, review_id:row.review_id, rating:row.rating}) WITH row, n MATCH(t:Book{book_id:row.book_id}) MERGE (n) - [:REVIEWS] -> (t);
